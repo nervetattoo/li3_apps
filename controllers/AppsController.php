@@ -4,7 +4,7 @@ namespace app\controllers;
 
 use \app\models\App;
 
-class AppsController extends \lithium\action\Controller {
+class AppsController extends AppController {
 
 	public function index() {
 		$apps = App::all();
@@ -14,13 +14,21 @@ class AppsController extends \lithium\action\Controller {
 	public function view() {
 		$app = App::first($this->request->id);
         $versions = $app->versions();
-		return compact('app', 'versions');
+        /*
+        $app->deploy(array(
+            'tag' => 'HEAD',
+            'name' => 'gold'
+        ));
+         */
+        $deployed = $app->deployed();
+		return compact('app', 'versions', 'deployed');
 	}
 
 	public function add() {
 		$app = App::create();
 
 		if (($this->request->data) && $app->save($this->request->data)) {
+            $app->bootstrap();
 			$this->redirect(array('Apps::view', 'args' => array($app->_id)));
 		}
 		return compact('app');

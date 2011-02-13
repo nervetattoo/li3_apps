@@ -9,7 +9,7 @@
 use lithium\net\http\Router;
 use lithium\core\Environment;
 
-Router::connect('/', array('App::bootstrap',));
+Router::connect('/', array('Apps::index',));
 
 /**
  * Connect the testing routes.
@@ -22,8 +22,8 @@ if (!Environment::is('production')) {
 /**
  * Finally, connect the default routes.
  */
-Router::connect('/{:controller}/{:action}/{:id:[a-f0-9]+}.{:type}', array('id' => null));
-Router::connect('/{:controller}/{:action}/{:id:[a-f0-9]+}');
+Router::connect('/{:controller}/{:action}/{:id:[a-f0-9]{24}}.{:type}', array('id' => null));
+Router::connect('/{:controller}/{:action}/{:id:[a-f0-9]{24}}');
 Router::connect('/{:controller}/{:action}/{:args}');
 
 ?>

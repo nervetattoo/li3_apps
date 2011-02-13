@@ -5,6 +5,7 @@ namespace app\controllers;
 class AppController extends \lithium\action\Controller {
 
 	public function bootstrap() {
-        return array();
+		$apps = App::all();
+		return compact('apps');
 	}
 }

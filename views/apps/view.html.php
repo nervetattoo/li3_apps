@@ -1,9 +1,23 @@
 <h1><?=$app->title ?></h1>
-<h2><?=$app->repo ?></h2>
+<p><?=$app->repo ?></p>
 
-<h3>Versions</h3>
-<?php foreach($versions as $version): ?>
-<div>
-    <h4><?=$version ?></h4>
-</div>
+<h2>Deploys</h2>
+<ul>
+<?php foreach($deployed as $node): ?>
+    <li>
+        <h5>
+            <?=$node['name'] ?>
+            (<?=$node['link'] ?>)
+        </h5>
+    </li>
 <?php endforeach; ?>
+</ul>
+
+<h2>Versions</h2>
+<ul>
+<?php foreach($versions as $version): ?>
+    <li>
+        <h4><?=$version ?></h4>
+    </li>
+<?php endforeach; ?>
+</ul>
