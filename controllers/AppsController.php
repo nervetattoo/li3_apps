@@ -13,14 +13,15 @@ class AppsController extends \lithium\action\Controller {
 
 	public function view() {
 		$app = App::first($this->request->id);
-		return compact('app');
+        $versions = $app->versions();
+		return compact('app', 'versions');
 	}
 
 	public function add() {
 		$app = App::create();
 
 		if (($this->request->data) && $app->save($this->request->data)) {
-			$this->redirect(array('Apps::view', 'args' => array($app->id)));
+			$this->redirect(array('Apps::view', 'args' => array($app->_id)));
 		}
 		return compact('app');
 	}
@@ -32,7 +33,7 @@ class AppsController extends \lithium\action\Controller {
 			$this->redirect('Apps::index');
 		}
 		if (($this->request->data) && $app->save($this->request->data)) {
-			$this->redirect(array('Apps::view', 'args' => array($app->id)));
+			$this->redirect(array('Apps::view', 'args' => array($app->_id)));
 		}
 		return compact('app');
 	}

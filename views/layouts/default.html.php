@@ -12,6 +12,10 @@
 </head>
 <body class="app">
     <div id="wrapper">
+        <nav id=menu>
+        <?=$this->html->link('Add App', '/apps/add');?>
+        <?=$this->html->link('Apps', '/apps');?>
+        </nav>
         <?php echo $this->content(); ?>
     </div>
 </body>

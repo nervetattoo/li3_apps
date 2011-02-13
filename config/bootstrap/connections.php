@@ -44,11 +44,11 @@ Connections::add('default', array(
     'development' => array(
         'type' => 'MongoDb',
         'host' => 'localhost',
-        'database' => 'li3_blog_dev'
+        'database' => 'apps_dev'
     ),
     'production' => array(
         'type' => 'MongoDb',
         'host' => 'localhost',
-        'database' => 'li3_blog'
+        'database' => 'apps'
     ),
 ));
