@@ -51,6 +51,74 @@ class Git extends \lithium\core\Object {
     }
 
     /**
+     * Perform a checkout of app
+     *
+     * @param array $data Indicates where to check out and in what starting state
+     *              - `path` Where to check out to
+     *              - `branch` Check out a new branch
+     *              - `tag` Check out a new tag
+     * @return bool
+     */
+    public function checkout(array $options = array()) {
+        $options += array(
+            'branch' => 'master',
+            'to' => false,
+            'pull' => false
+        ) + $this->_config;
+        $branch = $options['branch'];
+        $pull = $options['pull'];
+
+        $to = ($options['to']) ? $options['to'] : $this->_path(compact('branch'));
+
+        if (!file_exists($to)) {
+            $command = "git clone {$options['url']} {$to}";
+            $ok = (strpos(shell_exec($command), 'Initialized') !== false);
+            chdir($to);
+            shell_exec("git checkout {$branch}");
+            return $ok;
+        }
+        else
+            return ($pull) ? $this->pull($branch) : true;
+    }
+
+    public function refs($limit) {
+        $path = $this->_path();
+        chdir($path);
+        shell_exec("git pull");
+        $out = shell_exec('git log --pretty=format:"%h;%ad;%s%d" --date=short -'.$limit);
+        $commits = array();
+        foreach (explode("\n", $out) as $line) {
+            $lineParts = explode(";", substr($line, 2));
+            $hash = array_shift($lineParts);
+            $date = array_shift($lineParts);
+            $message = join(";", $lineParts);
+            $commits[] = compact('hash', 'date', 'message');
+        }
+        return $commits;
+    }
+    public function branches() {
+        $path = $this->_path();
+        chdir($path);
+        $out = shell_exec("git branch -r");
+        $tmpBranches = array_filter(explode("\n", $out));
+        $branches = array();
+        foreach ($tmpBranches as $branch) {
+            $branch = trim(str_replace("*", "", $branch));
+            if (($cutOff = strpos($branch, " ")) !== false) {
+                $branch = substr($branch, 0, $cutOff);
+            }
+            $branches[] = $branch;
+        }
+        return $branches;
+    }
+
+    public function pull($branch) {
+        $to = $this->_path(compact('branch'));
+        chdir($to);
+        return shell_exec("git pull --all");
+    }
+
+    /**
      * Perform a checkout, should normally happen just once for each repo
      * @param array $data Indicates where to check out and in what starting state
      *              - `path` Where to check out to
@@ -58,7 +126,7 @@ class Git extends \lithium\core\Object {
      *              - `tag` Check out a new tag
      * @return bool
      */
-    public function checkout(array $data = array(), array $options = array()) {
+    public function __checkout(array $data = array(), array $options = array()) {
         $data += array(
             'branch' => 'master'
         ) + $this->_config;

@@ -2,6 +2,7 @@
 
 namespace app\models;
 use app\models\Repo;
+use app\models\Deploy;
 
 class App extends \lithium\data\Model {
 
@@ -9,7 +10,7 @@ class App extends \lithium\data\Model {
     protected $_schema = array(
         '_id' => array('type' => 'id'),
         'title' => array('type' => 'string'), 
-        'repo' => array('type' => 'repo'), 
+        'repo' => array('type' => 'string'), 
         'path' => array('type' => 'string'), 
         'created' => array('type' => 'date'), 
     );
@@ -36,7 +37,10 @@ class App extends \lithium\data\Model {
         $complete = (strpos($path, "/") === 0);
 
         if (!$complete) $path = "/home/apps/" . $path;
-        if ($sub) $path .= "/" . $sub;
+        if ($sub) {
+            $sub = (is_array($sub)) ?: (array) $sub;
+            $path .= "/" . implode("/", $sub);
+        }
 
         if (!file_exists($path) && $options['create'])
             mkdir($path, 0777, true);
@@ -62,6 +66,7 @@ class App extends \lithium\data\Model {
      */
     public static function deployed($entity, array $options = array()) {
         $path = $entity->path();
+        print_r($entity->deployed);
         $repo = Repo::fromRemote($entity->remote, compact('path'));
         $return = array();
         $deploy = $repo->ls('deploy');
@@ -87,23 +92,45 @@ class App extends \lithium\data\Model {
     public static function deploy($entity, array $data = array(), array $options = array()) {
         $data += array(
             'branch' => 'master',
-            'pull' => false
         );
+        $data['account'] = $entity->_id;
+
+        $deploy = Deploy::create();
+        $data = array_intersect_key($data, $deploy->schema());
+        $deploy->save($data);
+        return $deploy;
+    }
+
+    public static function repo($entity) {
         $path = $entity->path();
-        $repo = Repo::fromRemote($entity->remote, compact('path'));
-        $repo->checkout($data);
+        return Repo::fromRemote($entity->repo, compact('path'));
     }
 
     /**
      * Perform initial clone of repo
      */
     public function bootstrap($entity, array $options = array()) {
+        /**
+         * Create default app paths
+         */
         if (($path = $entity->path()) == false) {
             $path = $entity->path(null, array('create' => true));
             $entity->path("deploy", array('create' => true));
             $entity->path("tags", array('create' => true));
         }
+        // @var Git
         $repo = Repo::fromRemote($entity->repo, compact('path'));
-        return $repo->checkout();
+
+        /**
+         * Create a default deploy target
+         */
+        if ($repo->checkout()) {
+            /*
+            $entity->deploy(array(
+                'tag' => 'HEAD',
+                'name' => 'default'
+            ));
+             */
+        }
     }
 }
